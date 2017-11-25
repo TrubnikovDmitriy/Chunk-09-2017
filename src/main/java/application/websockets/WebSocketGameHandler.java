@@ -46,7 +46,7 @@ public class WebSocketGameHandler extends AbstractWebSocketHandler {
         final Long userID = (Long) session.getAttributes().get(UserTools.USER_ID_ATTR);
         if (userID == null) {
             session.sendMessage(new TextMessage(mapper.writeValueAsString(
-                            new StatusCode3xx(GameSocketStatusCode.NOT_AUTHORIZED))));
+                    new StatusCode3xx(GameSocketStatusCode.NOT_AUTHORIZED))));
             session.close(CloseStatus.NOT_ACCEPTABLE);
             logger.warn(GameSocketStatusCode.NOT_AUTHORIZED.toString());
         } else {
