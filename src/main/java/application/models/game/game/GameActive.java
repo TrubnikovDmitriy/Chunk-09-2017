@@ -7,10 +7,10 @@ import application.models.game.player.PlayerGamer;
 import application.services.game.GameSocketStatusCode;
 import application.services.game.GameTools;
 import application.views.game.StatusCode;
-import application.views.game.statuscodeGame.StatusCodeBegin;
-import application.views.game.statuscodeGame.StatusCodeStep;
-import application.views.game.statuscodeGame.StatusCodeGameover;
-import application.views.game.statuscodeGame.StatusCodeGame;
+import application.views.game.statuscodegame.StatusCodeBegin;
+import application.views.game.statuscodegame.StatusCodeStep;
+import application.views.game.statuscodegame.StatusCodeGameover;
+import application.views.game.statuscodegame.StatusCodeGame;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Collection;
@@ -99,7 +99,6 @@ public final class GameActive extends GameAbstract {
     }
 
     @Override
-    // Нужно ли делать synchronized?
     void notifyPlayers(StatusCode statusCode) {
         gamers.values().forEach(gamer -> {
             if (gamer.getUserID() != null) {
