@@ -144,11 +144,11 @@ public final class PlayerBot extends PlayerAbstractActive {
             // Получаем ID след незаблокированного игрока
             Integer nextEnemyID = getPlayerID();
             do {
-                 nextEnemyID = possbileField.getNextID(nextEnemyID);
-                 if (nextEnemyID.equals(getPlayerID())) {
-                     stepAnalyze.enemyAssumed = 0;
-                     continue out;
-                 }
+                nextEnemyID = possbileField.getNextID(nextEnemyID);
+                if (nextEnemyID.equals(getPlayerID())) {
+                    stepAnalyze.enemyAssumed = 0;
+                    continue out;
+                }
             } while (possbileField.isBlocked(nextEnemyID));
 
             // Просчитываем его ход по "жадному алгоритму"
