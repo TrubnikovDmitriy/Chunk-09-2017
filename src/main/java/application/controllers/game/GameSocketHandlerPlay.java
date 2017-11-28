@@ -10,8 +10,8 @@ import application.services.game.GameSocketStatusCode;
 import application.services.game.GameTools;
 import application.services.user.UserService;
 import application.services.user.UserTools;
-import application.views.game.statuscode2xx.StatusCode204;
-import application.views.game.statuscode3xx.StatusCode3xx;
+import application.views.game.statuscodeGame.StatusCodeGameover;
+import application.views.game.statuscodeError.StatusCode3xx;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -81,7 +81,7 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
 
         // Оповещение подписчиков
         final String payload = this.toJSON(
-                new StatusCode204(readyGame.getGameID()));
+                new StatusCodeGameover(readyGame.getGameID()));
         this.notifySubscribers(payload);
 
         getGameLogger().info("Game #" + readyGame.getGameID() + " is started");
@@ -131,7 +131,7 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
                 payload = this.toJSON(new StatusCode3xx(GameSocketStatusCode.FALSE));
                 this.sendMessage(session, payload);
             } else {
-                payload = this.toJSON(new StatusCode204(game.getGameID()));
+                payload = this.toJSON(new StatusCodeGameover(game.getGameID()));
                 this.notifySubscribers(payload);
                 activeGames.remove(gameID);
             }

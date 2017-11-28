@@ -10,10 +10,10 @@ import application.services.game.GameTools;
 import application.services.game.GameSocketStatusCode;
 import application.services.user.UserService;
 import application.services.user.UserTools;
-import application.views.game.statuscode1xx.StatusCode1xx;
-import application.views.game.statuscode1xx.StatusCode111;
-import application.views.game.statuscode1xx.StatusCode112;
-import application.views.game.statuscode3xx.StatusCode3xx;
+import application.views.game.statuscodeLobby.StatusCodeLobby;
+import application.views.game.statuscodeLobby.StatusCodeFullstatus;
+import application.views.game.statuscodeLobby.StatusCodeWhami;
+import application.views.game.statuscodeError.StatusCode3xx;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -157,7 +157,7 @@ public final class GameSocketHandlerLobby extends GameSocketHandler {
 
         // Оповестить подписчиков
         final String payload = this.toJSON(
-                new StatusCode1xx(GameSocketStatusCode.SUBSCRIBE_P, newGame));
+                new StatusCodeLobby(GameSocketStatusCode.SUBSCRIBE_P, newGame));
         this.notifySubscribers(payload);
 
         getGameLogger().info("Create prepare Game #" + newGameID);
@@ -203,7 +203,7 @@ public final class GameSocketHandlerLobby extends GameSocketHandler {
 
         // Оповестить подписчиков
         final String payload = this.toJSON(
-                new StatusCode1xx(GameSocketStatusCode.SUBSCRIBE_P, game));
+                new StatusCodeLobby(GameSocketStatusCode.SUBSCRIBE_P, game));
         this.notifySubscribers(payload);
     }
 
@@ -234,7 +234,7 @@ public final class GameSocketHandlerLobby extends GameSocketHandler {
 
         // Оповестить подписчиков
         final String payload = this.toJSON(
-                new StatusCode1xx(GameSocketStatusCode.SUBSCRIBE_P, game));
+                new StatusCodeLobby(GameSocketStatusCode.SUBSCRIBE_P, game));
         this.notifySubscribers(payload);
     }
 
@@ -250,7 +250,7 @@ public final class GameSocketHandlerLobby extends GameSocketHandler {
 
         game.removeGamer(userID);
 
-        final String payload = toJSON(new StatusCode1xx(GameSocketStatusCode.EXIT, game));
+        final String payload = toJSON(new StatusCodeLobby(GameSocketStatusCode.EXIT, game));
         notifySubscribers(payload);
     }
 
@@ -272,14 +272,14 @@ public final class GameSocketHandlerLobby extends GameSocketHandler {
         }
 
         final String payload = this.toJSON(
-                new StatusCode1xx(GameSocketStatusCode.STATUS, game));
+                new StatusCodeLobby(GameSocketStatusCode.STATUS, game));
         this.sendMessage(session, payload);
     }
 
     private void fullStatus(WebSocketSession session) {
 
-        final String paylod = toJSON(new StatusCode111(
-                GameSocketStatusCode.FULL_STATUS, preparingGames.values()));
+        final String paylod = toJSON(new StatusCodeFullstatus(
+                preparingGames.values()));
         this.sendMessage(session, paylod);
     }
 
@@ -305,7 +305,7 @@ public final class GameSocketHandlerLobby extends GameSocketHandler {
         playController.addGame(preparingGames.remove(game.getGameID()));
 
         final String payload = toJSON(
-                new StatusCode1xx(GameSocketStatusCode.START, game.getGameID()));
+                new StatusCodeLobby(GameSocketStatusCode.START, game.getGameID()));
         notifySubscribers(payload);
     }
 
@@ -361,7 +361,7 @@ public final class GameSocketHandlerLobby extends GameSocketHandler {
 
         // Оповестить подписчиков
         final String payload = toJSON(
-                new StatusCode1xx(GameSocketStatusCode.SUBSCRIBE_P, game));
+                new StatusCodeLobby(GameSocketStatusCode.SUBSCRIBE_P, game));
         this.notifySubscribers(payload);
     }
 
@@ -370,7 +370,7 @@ public final class GameSocketHandlerLobby extends GameSocketHandler {
         final Long userID = (Long) session.getAttributes().get(UserTools.USER_ID_ATTR);
         final Long gameID = (Long) session.getAttributes().get(GameTools.GAME_ID_ATTR);
 
-        this.sendMessage(session, this.toJSON(new StatusCode112(userID, gameID)));
+        this.sendMessage(session, this.toJSON(new StatusCodeWhami(userID, gameID)));
     }
 
     private void subscribe(@NotNull WebSocketSession session) {
