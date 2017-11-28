@@ -85,12 +85,10 @@ public final class GameActive extends GameAbstract {
 
     public synchronized void playerOff(Long userID) {
         gamers.values().forEach(gamer -> {
-            if (gamer.getUserID() != null) {
-                if (gamer.getUserID().equals(userID)) {
-                    gamer.switchOff();
-                    notifyPlayers(new StatusCodeGame(
-                            GameSocketStatusCode.PLAYER_OFF, gamer));
-                }
+            if (gamer.getUserID().equals(userID)) {
+                gamer.switchOff();
+                notifyPlayers(new StatusCodeGame(
+                        GameSocketStatusCode.PLAYER_OFF, gamer));
             }
         });
     }
