@@ -1,33 +1,39 @@
 package application.models.game.game;
 
+import application.exceptions.game.GameExceptionDestroyActive;
 import application.models.game.field.Step;
 import application.models.game.player.PlayerAbstractActive;
 import application.models.game.player.PlayerBot;
 import application.models.game.player.PlayerGamer;
 import application.models.game.player.PlayerWatcher;
+import application.services.game.BotLogic;
 import application.services.game.GameSocketStatusCode;
 import application.services.game.GameTools;
 import application.views.game.StatusCode;
-import application.views.game.active.StatusCodeBegin;
-import application.views.game.active.StatusCodeStep;
-import application.views.game.active.StatusCodeGameover;
-import application.views.game.active.StatusCodeGame;
+import application.views.game.active.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 
 public final class GameActive extends GameAbstract {
 
     private Integer currentPlayerID;
+    private final ScheduledExecutorService executor;
+    private ScheduledFuture future;
+
     private final ConcurrentHashMap<Integer /*playerID*/, PlayerAbstractActive> gamers;
     private final ConcurrentHashMap<Long /*userID*/, PlayerWatcher> watchers;
 
     private Boolean gameOver;
 
-    public GameActive(GamePrepare prepared) {
+    public GameActive(GamePrepare prepared, ScheduledExecutorService executor) {
         super(prepared.getGameID(), prepared.getField(), prepared.getNumberOfPlayers());
 
+        this.executor = executor;
         this.watchers = new ConcurrentHashMap<>();
         this.gamers = new ConcurrentHashMap<>(getNumberOfPlayers());
 
@@ -46,9 +52,13 @@ public final class GameActive extends GameAbstract {
         this.gameOver = false;
 
         notifyPlayers(new StatusCodeBegin(this));
+
+        future = executor.schedule(task, GameTools.FIRST_ROUND_TIME_SEC, TimeUnit.SECONDS);
     }
 
-    public synchronized Boolean makeStep(Step step) {
+    public synchronized Boolean makeStep(Step step) throws GameExceptionDestroyActive {
+
+        future.cancel(false);
 
         if (!getField().getPlayerInPoint(step.getSrc()).equals(currentPlayerID)) {
             return false;
@@ -61,9 +71,8 @@ public final class GameActive extends GameAbstract {
         notifyPlayers(new StatusCodeStep(step));
 
         if (getField().isGameOver()) {
-            this.end();
             this.gameOver = true;
-            return false;
+            this.end();
         }
 
         while (true) {
@@ -71,6 +80,7 @@ public final class GameActive extends GameAbstract {
             if (currentPlayerID == 0) {
                 currentPlayerID = GameTools.PLAYER_1;
             }
+            // Проверяем не заблокирован ли следующий игрок
             if (!getField().isBlocked(currentPlayerID)) {
                 break;
             }
@@ -81,19 +91,34 @@ public final class GameActive extends GameAbstract {
         if (gamers.get(currentPlayerID) instanceof PlayerBot) {
 
             final PlayerBot bot = (PlayerBot) gamers.get(currentPlayerID);
-            this.makeStep(bot.generateStep(getField()));
+            makeStep(bot.generateStep(getField()));
+            future.cancel(false);
         }
+
+        // Если игрок оффлайн, то делаем за него рандомный ход
+        if (!gamers.get(currentPlayerID).getOnline()) {
+            makeStep(BotLogic.lowLogic(getField(), currentPlayerID));
+            future.cancel(false);
+        }
+
+        // Ставим таймер на ход
+        future = executor.schedule(task, GameTools.ROUND_TIME_SEC, TimeUnit.SECONDS);
         return true;
     }
 
     public synchronized void playerOff(Long userID) {
         gamers.values().forEach(gamer -> {
-            if (gamer.getUserID().equals(userID)) {
-                notifyPlayers(new StatusCodeGame(
-                        GameSocketStatusCode.PLAYER_OFF, gamer));
-                gamer.switchOff();
+            if (gamer.getUserID() != null) {
+                if (gamer.getUserID().equals(userID)) {
+                    notifyPlayers(new StatusCodeGame(
+                            GameSocketStatusCode.PLAYER_OFF, gamer));
+                    gamer.switchOff();
+                }
             }
         });
+        if (userID.equals(getCurrentUserID())) {
+            makeStep(BotLogic.lowLogic(getField(), currentPlayerID));
+        }
     }
 
     public synchronized void playerOff(PlayerGamer player) {
@@ -140,6 +165,8 @@ public final class GameActive extends GameAbstract {
             }
         });
         gamers.clear();
+
+        throw new GameExceptionDestroyActive(getGameID());
     }
 
     @JsonIgnore
@@ -163,4 +190,10 @@ public final class GameActive extends GameAbstract {
     public ConcurrentHashMap<Long, PlayerWatcher> getWatchers() {
         return watchers;
     }
+
+    private final Runnable task = () -> {
+        notifyPlayers(new StatusCodeTimeout(
+                GameSocketStatusCode.TIMEOUT, currentPlayerID));
+        makeStep(BotLogic.lowLogic(getField(), currentPlayerID));
+    };
 }

@@ -28,8 +28,8 @@ public class GameTools {
             "Bob", "John", "Foo", "Bar", "Doctor", "Master",
             "Loki", "Thor", "Batman", "Gandalf", "Dahaka",
             "Java-Man", "Spider-Man", "Tony Stark", "Pennywise",
-            "Джевгенец", "Лапища", "п/п-к Пряхин", "Lucky",
-            "Титаевский", "Арсека", "Grandmaster", "Эрнестович"
+            "Lucky", "Grandmaster", "Dr.Strange", "I am Groot",
+            "Star Lord", "Rocket", "Thanos", "Ostapenko"
     );
 
     public static final int BOT_LEVEL_LOW = 1;
@@ -45,6 +45,9 @@ public class GameTools {
     public static final String MAX_X_ATTR = "maxX";
     public static final String MAX_Y_ATTR = "maxY";
 
+    public static final long ROUND_TIME_SEC = 3;
+    public static final long FIRST_ROUND_TIME_SEC = 45;
+    public static final long TIME_BETWEEN_CHECKS_MIN = 1;
 
     public static final Random RANDOM = new Random(new Date().getTime());
 
