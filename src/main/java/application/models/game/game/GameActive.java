@@ -1,6 +1,5 @@
 package application.models.game.game;
 
-import application.exceptions.game.GameExceptionDestroyActive;
 import application.models.game.field.Step;
 import application.models.game.player.PlayerAbstractActive;
 import application.models.game.player.PlayerBot;
@@ -13,22 +12,22 @@ import application.views.game.StatusCode;
 import application.views.game.active.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public final class GameActive extends GameAbstract {
 
     private Integer currentPlayerID;
+    private volatile long stepCount;
     private final ScheduledExecutorService executor;
     private ScheduledFuture future;
+    private GameFinishObserver observer;
 
     private final ConcurrentHashMap<Integer /*playerID*/, PlayerAbstractActive> gamers;
     private final ConcurrentHashMap<Long /*userID*/, PlayerWatcher> watchers;
 
-    private Boolean gameOver;
+    private AtomicBoolean gameOver = new AtomicBoolean(false);
 
     public GameActive(GamePrepare prepared, ScheduledExecutorService executor) {
         super(prepared.getGameID(), prepared.getField(), prepared.getNumberOfPlayers());
@@ -49,30 +48,42 @@ public final class GameActive extends GameAbstract {
 
         this.getField().initialize(getNumberOfPlayers());
         this.currentPlayerID = GameTools.PLAYER_1;
-        this.gameOver = false;
 
         notifyPlayers(new StatusCodeBegin(this));
 
-        future = executor.schedule(task, 2 * GameTools.ROUND_TIME_SEC, TimeUnit.SECONDS);
+        stepCount = 0L;
+        future = executor.schedule(new Task(stepCount),
+                2 * GameTools.ROUND_TIME_SEC, TimeUnit.SECONDS);
     }
 
-    public synchronized Boolean makeStep(Step step) {
+    public void setObserver(GameFinishObserver observer) {
+        this.observer = observer;
+    }
 
-        future.cancel(false);
+    public synchronized Boolean makeStep(Step step, Long stepID) {
 
+        if (!stepID.equals(stepCount)) {
+            return false;
+        }
         if (!getField().getPlayerInPoint(step.getSrc()).equals(currentPlayerID)) {
             return false;
         }
-
         if (!getField().makeStep(step)) {
             return false;
         }
 
+        future.cancel(false);
+        if (THREAD_LOCAL.get() != null && THREAD_LOCAL.get() == stepCount) {
+            notifyPlayers(new StatusCodeTimeout(
+                    GameSocketStatusCode.TIMEOUT, currentPlayerID));
+        }
         notifyPlayers(new StatusCodeStep(step));
+        ++stepCount;
 
         if (getField().isGameOver()) {
-            this.gameOver = true;
-            this.end();
+            gameOver.set(true);
+            end();
+            return true;
         }
 
         while (true) {
@@ -88,21 +99,27 @@ public final class GameActive extends GameAbstract {
                     GameSocketStatusCode.BLOCKED, gamers.get(currentPlayerID)));
         }
 
+        // Если игрок бот, то делаем ход ботом
         if (gamers.get(currentPlayerID) instanceof PlayerBot) {
-
             final PlayerBot bot = (PlayerBot) gamers.get(currentPlayerID);
-            makeStep(bot.generateStep(getField()));
+            makeStep(bot.generateStep(getField()), stepCount);
+            if (gameOver.get()) {
+                return true;
+            }
             future.cancel(false);
         }
 
         // Если игрок оффлайн, то делаем за него рандомный ход
         if (!gamers.get(currentPlayerID).getOnline()) {
-            makeStep(BotLogic.lowLogic(getField(), currentPlayerID));
+            makeStep(BotLogic.lowLogic(getField(), currentPlayerID), stepCount);
+            if (gameOver.get()) {
+                return true;
+            }
             future.cancel(false);
         }
 
-        // Ставим таймер на ход
-        future = executor.schedule(task, GameTools.ROUND_TIME_SEC, TimeUnit.SECONDS);
+        future = executor.schedule(new Task(stepCount),
+                GameTools.ROUND_TIME_SEC, TimeUnit.SECONDS);
         return true;
     }
 
@@ -117,7 +134,7 @@ public final class GameActive extends GameAbstract {
             }
         });
         if (userID.equals(getCurrentUserID())) {
-            makeStep(BotLogic.lowLogic(getField(), currentPlayerID));
+            makeStep(BotLogic.lowLogic(getField(), currentPlayerID), stepCount);
         }
     }
 
@@ -166,12 +183,12 @@ public final class GameActive extends GameAbstract {
         });
         gamers.clear();
 
-        throw new GameExceptionDestroyActive(getGameID());
+        observer.gameGinished(getGameID());
     }
 
     @JsonIgnore
     public boolean getGameOver() {
-        return gameOver;
+        return gameOver.get();
     }
 
     @JsonIgnore
@@ -191,9 +208,24 @@ public final class GameActive extends GameAbstract {
         return watchers;
     }
 
-    private final Runnable task = () -> {
-        notifyPlayers(new StatusCodeTimeout(
-                GameSocketStatusCode.TIMEOUT, currentPlayerID));
-        makeStep(BotLogic.lowLogic(getField(), currentPlayerID));
-    };
+    private static final ThreadLocal<Long> THREAD_LOCAL = new ThreadLocal<>();
+
+    private final class Task extends Thread {
+
+        private final Long stepID;
+
+        Task(Long taskStepID) {
+            this.stepID = taskStepID;
+        }
+
+        @Override
+        public void run() {
+            THREAD_LOCAL.set(stepID);
+            makeStep(BotLogic.lowLogic(getField(), currentPlayerID), THREAD_LOCAL.get());
+        }
+    }
+
+    public interface GameFinishObserver {
+        void gameGinished(Long gameID);
+    }
 }

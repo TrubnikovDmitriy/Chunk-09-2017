@@ -31,19 +31,13 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
 
     private final UserService userService;
 
-    GameSocketHandlerPlay(UserService userService, ObjectMapper mapper) {
+    GameSocketHandlerPlay(UserService userService, ObjectMapper mapper,
+                          ScheduledExecutorService executor) {
         super(mapper);
         this.activeGames = new ConcurrentHashMap<>();
         this.subscribers = new CopyOnWriteArraySet<>();
-        this.executor = Executors.newScheduledThreadPool(GameTools.EXECUTOR_THREADS_COUNT);
+        this.executor = executor;
         this.userService = userService;
-
-        executor.scheduleWithFixedDelay(
-                this::destroyFinishedGames,
-                GameTools.TIME_BETWEEN_CHECKS_MIN,
-                GameTools.TIME_BETWEEN_CHECKS_MIN,
-                TimeUnit.MINUTES
-        );
     }
 
     @Override
@@ -90,7 +84,9 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
     }
 
     void addGame(GamePrepare readyGame) {
-        activeGames.put(readyGame.getGameID(), new GameActive(readyGame, executor));
+        final GameActive newGame = new GameActive(readyGame, executor);
+        newGame.setObserver(this::destroy);
+        activeGames.put(readyGame.getGameID(), newGame);
 
         // Оповещение подписчиков
         final String payload = this.toJSON(
@@ -134,9 +130,15 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
             sendMessage(session, toJSON(new StatusCodeErrorAttr(GameTools.STEP_ATTR)));
             return;
         }
+        if (!jsonNode.hasNonNull(GameTools.STEP_ID_ATTR)) {
+            payload = toJSON(new StatusCodeErrorAttr(GameTools.STEP_ID_ATTR));
+            sendMessage(session, payload);
+            throw new GameException(payload);
+        }
+        final Long stepID = jsonNode.get(GameTools.STEP_ID_ATTR).asLong();
 
         // Совершить ход
-        if (!game.makeStep(step)) {
+        if (!game.makeStep(step, stepID)) {
             payload = this.toJSON(new StatusCodeError(GameSocketStatusCode.FALSE));
             this.sendMessage(session, payload);
         }
@@ -261,20 +263,6 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
                     new StatusCodeGameover(destroyingGame.getGameID())));
             activeGames.remove(gameID);
             getGameLogger().info("Game #" + gameID + " is ended");
-        }
-    }
-
-
-    private void destroyFinishedGames() {
-
-        for (GameActive game : activeGames.values()) {
-            if (game.getGameOver()) {
-                final Long gameID = game.getGameID();
-                this.notifySubscribers(this.toJSON(new StatusCodeGameover(gameID)));
-
-                activeGames.remove(gameID);
-                getGameLogger().info("Game #" + gameID + " is ended");
-            }
         }
     }
 }
