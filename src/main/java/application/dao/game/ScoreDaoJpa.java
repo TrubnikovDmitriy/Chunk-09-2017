@@ -28,7 +28,7 @@ public class ScoreDaoJpa {
 
     public List<Score> getBestScores(Integer limit) {
         final TypedQuery<ScoreEntity> query = em.createQuery(
-                "SELECT s FROM ScoreEntity s ORDER BY s.result", ScoreEntity.class);
+                "SELECT s FROM ScoreEntity s ORDER BY s.result DESC", ScoreEntity.class);
 
         query.setFirstResult(0);
         query.setMaxResults(limit);
