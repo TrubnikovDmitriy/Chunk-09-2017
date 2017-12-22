@@ -18,16 +18,12 @@ CREATE TABLE score (
 --
 
 CREATE SEQUENCE score_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 
-
---
--- Name: score_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trubnikov
---
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
 
 ALTER SEQUENCE score_id_seq OWNED BY score.id;
 
@@ -49,63 +45,23 @@ CREATE TABLE users (
 --
 
 CREATE SEQUENCE users_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+START WITH 1
+INCREMENT BY 1
+NO MINVALUE
+NO MAXVALUE
+CACHE 1;
 
-
---
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trubnikov
---
 
 ALTER SEQUENCE users_id_seq OWNED BY users.id;
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: trubnikov
---
-
 ALTER TABLE ONLY score ALTER COLUMN id SET DEFAULT nextval('score_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: trubnikov
---
-
 ALTER TABLE ONLY users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regclass);
 
 
---
--- Name: score_id_pk; Type: CONSTRAINT; Schema: public; Owner: trubnikov
---
-
 ALTER TABLE ONLY score
     ADD CONSTRAINT score_id_pk PRIMARY KEY (id);
-
-
---
--- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: trubnikov
---
-
 ALTER TABLE ONLY users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
-
-
-
-
---
--- Name: users_email_uindex; Type: INDEX; Schema: public; Owner: trubnikov
---
-
 CREATE UNIQUE INDEX users_email_uindex ON users USING btree (email);
-
-
---
--- Name: users_username_uindex; Type: INDEX; Schema: public; Owner: trubnikov
---
-
 CREATE UNIQUE INDEX users_username_uindex ON users USING btree (username);
 
 
