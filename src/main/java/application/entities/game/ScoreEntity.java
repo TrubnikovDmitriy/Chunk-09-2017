@@ -1,9 +1,9 @@
 package application.entities.game;
 
-import application.models.user.UserSignUp;
-import application.models.user.UserUpdate;
+import application.models.game.field.Score;
 
 import javax.persistence.*;
+
 
 @Entity
 @Table(name = "score")
@@ -19,4 +19,34 @@ public class ScoreEntity {
 
     @Column(name = "user_id", nullable = false)
     private Long userID;
+
+
+    public ScoreEntity(Score score) {
+        this.result = score.getScore();
+        this.userID = score.getUserID();
+    }
+
+    public Long getScoreID() {
+        return scoreID;
+    }
+
+    public void setScoreID(Long scoreID) {
+        this.scoreID = scoreID;
+    }
+
+    public Double getResult() {
+        return result;
+    }
+
+    public void setResult(Double result) {
+        this.result = result;
+    }
+
+    public Long getUserID() {
+        return userID;
+    }
+
+    public void setUserID(Long userID) {
+        this.userID = userID;
+    }
 }
