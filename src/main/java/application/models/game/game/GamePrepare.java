@@ -6,6 +6,7 @@ import application.models.game.player.PlayerGamer;
 import application.services.game.GameTools;
 import application.services.game.GameSocketStatusCode;
 import application.views.game.StatusCode;
+import application.views.game.lobby.StatusCodeChangeMaster;
 import application.views.game.lobby.StatusCodePrepareAddBot;
 import application.views.game.lobby.StatusCodePrepareAddPlayer;
 import application.views.game.StatusCodeSendID;
@@ -73,8 +74,8 @@ public final class GamePrepare extends GameAbstract {
                 final Optional<PlayerGamer> newMaster = gamers.values().stream().findFirst();
                 if (newMaster.isPresent()) {
                     masterID = newMaster.get().getUserID();
-                    notifyPlayers(new StatusCodeSendID(
-                            GameSocketStatusCode.CHANGE_MASTER, masterID));
+                    notifyPlayers(new StatusCodeChangeMaster(
+                            newMaster.get().getUserID(), newMaster.get().getUsername()));
                 } else {
                     getObserver().afterGameOver(getGameID());
                 }
