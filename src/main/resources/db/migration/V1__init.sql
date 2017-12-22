@@ -5,7 +5,6 @@
 -- Name: score; Type: TABLE; Schema: public; Owner: trubnikov
 --
 
-
 CREATE TABLE score (
     id bigint NOT NULL,
     result double precision NOT NULL,
