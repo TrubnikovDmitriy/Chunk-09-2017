@@ -33,8 +33,6 @@ public enum GameSocketStatusCode {
     SUBSCRIBE_A(207, "Subscribe to the update of the active active list"),
     UNSUBSCRIBE_A(208, "Unsubscribe from the updating of the active active list"),
     PLAYER_OFF(209, "Player is offline"),
-    RECONNECT(210, "Reconnect to active"),
-    LEAVE(210, "Leave from active active"),
 
     /* Client Error status code */
     UNEXPECTED(300, "The requested code does not exist"),

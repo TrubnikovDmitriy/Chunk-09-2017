@@ -1,4 +1,4 @@
-package application.entities;
+package application.entities.user;
 
 import application.models.user.UserSignUp;
 import application.models.user.UserUpdate;
