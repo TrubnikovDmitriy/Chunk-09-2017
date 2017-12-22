@@ -64,7 +64,7 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
             unsubscribe(session);
             return;
         }
-        if (code.equals(GameSocketStatusCode.LEAVE.getValue())) {
+        if (code.equals(GameSocketStatusCode.PLAYER_OFF.getValue())) {
             leave(session);
             return;
         }
