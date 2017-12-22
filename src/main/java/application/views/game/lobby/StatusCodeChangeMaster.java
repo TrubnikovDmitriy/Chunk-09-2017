@@ -13,4 +13,12 @@ public class StatusCodeChangeMaster extends StatusCode {
         this.masterID = masterID;
         this.masterName = masterName;
     }
+
+    public Long getMasterID() {
+        return masterID;
+    }
+
+    public String getMasterName() {
+        return masterName;
+    }
 }
