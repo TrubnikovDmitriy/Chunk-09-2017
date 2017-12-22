@@ -9,6 +9,7 @@ import application.models.user.UserUpdate;
 import application.services.user.UserService;
 import application.services.user.UserServiceJpa;
 import application.views.user.UserFail;
+import application.views.user.UserScoreboard;
 import application.views.user.UserSuccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -110,10 +112,16 @@ public class UserHttpController {
     @GetMapping(path = "/score")
     public ResponseEntity score(@RequestParam(
             name = "limit", required = false, defaultValue = "10") Integer limit) {
-        return new ResponseEntity<>(
-                scoreService.getBestScores(limit),
-                HttpStatus.OK
-        );
+        final List<Score> scores = scoreService.getBestScores(limit);
+        final List<UserScoreboard> scoreboard = new ArrayList<>(scores.size());
+        for (Score score : scores) {
+            scoreboard.add(new UserScoreboard(
+                    userService.getUserById(score.getUserID()).getUsername(),
+                    score.getUserID(),
+                    score.getScore()
+            ));
+        }
+        return new ResponseEntity<>(scoreboard, HttpStatus.OK);
     }
 
     @ExceptionHandler(UserException.class)
