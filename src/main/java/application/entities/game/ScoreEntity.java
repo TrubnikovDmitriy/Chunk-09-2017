@@ -20,6 +20,7 @@ public class ScoreEntity {
     @Column(name = "user_id", nullable = false)
     private Long userID;
 
+    ScoreEntity() { }
 
     public ScoreEntity(Score score) {
         this.result = score.getScore();
