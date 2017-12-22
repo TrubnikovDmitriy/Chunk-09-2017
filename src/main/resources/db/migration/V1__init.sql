@@ -13,8 +13,6 @@ CREATE TABLE score (
 );
 
 
-ALTER TABLE score OWNER TO trubnikov;
-
 --
 -- Name: score_id_seq; Type: SEQUENCE; Schema: public; Owner: trubnikov
 --
@@ -26,8 +24,6 @@ CREATE SEQUENCE score_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE score_id_seq OWNER TO trubnikov;
 
 --
 -- Name: score_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trubnikov
@@ -48,8 +44,6 @@ CREATE TABLE users (
 );
 
 
-ALTER TABLE users OWNER TO trubnikov;
-
 --
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: trubnikov
 --
@@ -61,8 +55,6 @@ CREATE SEQUENCE users_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE users_id_seq OWNER TO trubnikov;
 
 --
 -- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: trubnikov
