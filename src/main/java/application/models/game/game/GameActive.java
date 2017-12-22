@@ -59,7 +59,7 @@ public final class GameActive extends GameAbstract {
 
         stepCount = 0L;
         future = executor.schedule(new Task(stepCount),
-                2 * GameTools.ROUND_TIME_SEC, TimeUnit.SECONDS);
+                GameTools.ROUND_TIME_SEC, TimeUnit.SECONDS);
     }
 
     public synchronized Boolean makeStep(Step step, Long stepID) {
