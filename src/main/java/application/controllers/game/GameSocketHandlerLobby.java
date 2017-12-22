@@ -215,7 +215,7 @@ public final class GameSocketHandlerLobby extends GameSocketHandler {
             return;
         }
 
-        game.removeGamer(kickID);
+        game.kickGamer(kickID);
         notifySubscribers(toJSON(
                 new StatusCodeLobbyInfoCompact(GameSocketStatusCode.UPDATE_GAME, game)));
     }
