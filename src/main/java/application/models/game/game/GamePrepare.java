@@ -55,6 +55,24 @@ public final class GamePrepare extends GameAbstract {
         notifyPlayers(new StatusCodePrepareAddBot(bot, bots.size()));
     }
 
+    public void kickGamer(Long userID) {
+
+        if (userID.equals(masterID)) {
+            return;
+        }
+        final PlayerGamer removeGamer = gamers.remove(userID);
+        if (removeGamer == null) {
+            return;
+        }
+        notifyPlayers(new StatusCodeSendID(GameSocketStatusCode.KICK_PLAYER, userID));
+
+        if (removeGamer.getSession().isOpen()) {
+            removeGamer.getSession().getAttributes().remove(GameTools.GAME_ID_ATTR);
+            this.sendMessageToPlayer(removeGamer,
+                    new StatusCodeSendID(GameSocketStatusCode.KICK_PLAYER, userID));
+        }
+    }
+
     public void removeGamer(Long userID) {
         final PlayerGamer removeGamer = gamers.remove(userID);
         if (removeGamer == null) {
