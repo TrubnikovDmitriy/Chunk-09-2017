@@ -176,7 +176,8 @@ public final class GameActive extends GameAbstract {
     private void end() {
 
         notifyPlayers(new StatusCodeGameover(getField()));
-        watchers.clear();
+        getObserver().afterGameOver(getGameID());
+        addToDataBase();
 
         gamers.values().forEach(gamer -> {
             if (gamer instanceof PlayerGamer) {
@@ -184,9 +185,7 @@ public final class GameActive extends GameAbstract {
             }
         });
         gamers.clear();
-
-        getObserver().afterGameOver(getGameID());
-        addToDataBase();
+        watchers.clear();
     }
 
     private void addToDataBase() {
@@ -195,7 +194,7 @@ public final class GameActive extends GameAbstract {
         }
 
         for (PlayerAbstractActive player : gamers.values()) {
-            if (player.getUserID() != null) {
+            if (player.getUserID() != null && player.getOnline()) {
                 final Integer assumedCount = getField().getPlayerSpots(player.getPlayerID()).size();
                 final Double result = assumedCount.doubleValue() * gamers.size();
                 scoreDao.addScore(new Score(player.getUserID(), result));

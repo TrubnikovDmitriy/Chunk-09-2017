@@ -3,6 +3,7 @@ package application.dao.game;
 import application.entities.game.ScoreEntity;
 import application.models.game.field.Score;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -19,6 +20,7 @@ public class ScoreDaoJpa {
         this.em = em;
     }
 
+    @Transactional
     public void addScore(Score score) {
         final ScoreEntity scoreEntity = new ScoreEntity(score);
         em.persist(scoreEntity);
