@@ -30,7 +30,6 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
     private final CopyOnWriteArraySet<WebSocketSession> subscribers;
     private ScheduledExecutorService executor;
     private final ScoreDaoJpa scoreDao;
-
     private final UserService userService;
 
     GameSocketHandlerPlay(UserService userService, ObjectMapper mapper,

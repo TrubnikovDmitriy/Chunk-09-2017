@@ -227,7 +227,7 @@ public final class GameActive extends GameAbstract {
     private static final ThreadLocal<Long> THREAD_LOCAL = new ThreadLocal<>();
 
     private final class Task implements Runnable {
-
+      
         private final Long stepID;
 
         Task(Long taskStepID) {
