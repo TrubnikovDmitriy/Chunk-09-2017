@@ -33,15 +33,13 @@ public enum GameSocketStatusCode {
     SUBSCRIBE_A(207, "Subscribe to the update of the active active list"),
     UNSUBSCRIBE_A(208, "Unsubscribe from the updating of the active active list"),
     PLAYER_OFF(209, "Player is offline"),
-    RECONNECT(210, "Reconnect to active"),
-    LEAVE(210, "Leave from active active"),
 
     /* Client Error status code */
     UNEXPECTED(300, "The requested code does not exist"),
     ALREADY_PLAY(301, "First, quite out of the previous active"),
     NOT_EXIST(302, "The requested active does not exist"),
     FORBIDDEN(303, "To perfom this action you must be a master of the active"),
-    NOT_ENOUGH(304, "Not enought players (the active master is able to add bots"),
+    NOT_ENOUGH(304, "Not enought players (the active master is able to add bots)"),
     NOT_AUTHORIZED(305, "You must be sign in"),
     FALSE(306, "Invalid active step"),
     TURN(307, "It is not your turn"),
@@ -69,11 +67,11 @@ public enum GameSocketStatusCode {
     }
 
     public static boolean isPlaying(final Integer code) {
-        return BEGIN.value <= code && code < NOT_AUTHORIZED.value;
+        return BEGIN.value <= code && code < UNEXPECTED.value;
     }
 
     public static boolean isClientError(final Integer code) {
-        return NOT_AUTHORIZED.value <= code && code < MAX_CODE;
+        return UNEXPECTED.value <= code && code < MAX_CODE;
     }
 
     @Override

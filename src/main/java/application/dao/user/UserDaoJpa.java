@@ -1,6 +1,6 @@
 package application.dao.user;
 
-import application.entities.UserEntity;
+import application.entities.user.UserEntity;
 import application.models.user.UserSignUp;
 import application.models.user.UserUpdate;
 import application.views.user.UserScore;

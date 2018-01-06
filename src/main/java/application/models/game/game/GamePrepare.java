@@ -6,6 +6,7 @@ import application.models.game.player.PlayerGamer;
 import application.services.game.GameTools;
 import application.services.game.GameSocketStatusCode;
 import application.views.game.StatusCode;
+import application.views.game.lobby.StatusCodeChangeMaster;
 import application.views.game.lobby.StatusCodePrepareAddBot;
 import application.views.game.lobby.StatusCodePrepareAddPlayer;
 import application.views.game.StatusCodeSendID;
@@ -54,6 +55,24 @@ public final class GamePrepare extends GameAbstract {
         notifyPlayers(new StatusCodePrepareAddBot(bot, bots.size()));
     }
 
+    public void kickGamer(Long userID) {
+
+        if (userID.equals(masterID)) {
+            return;
+        }
+        final PlayerGamer removeGamer = gamers.remove(userID);
+        if (removeGamer == null) {
+            return;
+        }
+        notifyPlayers(new StatusCodeSendID(GameSocketStatusCode.KICK_PLAYER, userID));
+
+        if (removeGamer.getSession().isOpen()) {
+            removeGamer.getSession().getAttributes().remove(GameTools.GAME_ID_ATTR);
+            this.sendMessageToPlayer(removeGamer,
+                    new StatusCodeSendID(GameSocketStatusCode.KICK_PLAYER, userID));
+        }
+    }
+
     public void removeGamer(Long userID) {
         final PlayerGamer removeGamer = gamers.remove(userID);
         if (removeGamer == null) {
@@ -73,8 +92,8 @@ public final class GamePrepare extends GameAbstract {
                 final Optional<PlayerGamer> newMaster = gamers.values().stream().findFirst();
                 if (newMaster.isPresent()) {
                     masterID = newMaster.get().getUserID();
-                    notifyPlayers(new StatusCodeSendID(
-                            GameSocketStatusCode.CHANGE_MASTER, masterID));
+                    notifyPlayers(new StatusCodeChangeMaster(
+                            newMaster.get().getUserID(), newMaster.get().getUsername()));
                 } else {
                     getObserver().afterGameOver(getGameID());
                 }

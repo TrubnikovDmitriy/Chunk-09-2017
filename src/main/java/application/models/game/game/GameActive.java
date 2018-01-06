@@ -1,5 +1,7 @@
 package application.models.game.game;
 
+import application.dao.game.ScoreDaoJpa;
+import application.models.game.field.Score;
 import application.models.game.field.Step;
 import application.models.game.player.PlayerAbstractActive;
 import application.models.game.player.PlayerBot;
@@ -27,10 +29,15 @@ public final class GameActive extends GameAbstract {
     private final ConcurrentHashMap<Long /*userID*/, PlayerWatcher> watchers;
 
     private AtomicBoolean gameOver = new AtomicBoolean(false);
+    private ScoreDaoJpa scoreDao;
 
-    public GameActive(GamePrepare prepared, ScheduledExecutorService executor) {
+    public GameActive(GamePrepare prepared,
+                      ScheduledExecutorService executor,
+                      ScoreDaoJpa scoreDao) {
+
         super(prepared.getGameID(), prepared.getField(), prepared.getNumberOfPlayers());
 
+        this.scoreDao = scoreDao;
         this.executor = executor;
         this.watchers = new ConcurrentHashMap<>();
         this.gamers = new ConcurrentHashMap<>(getNumberOfPlayers());
@@ -52,7 +59,7 @@ public final class GameActive extends GameAbstract {
 
         stepCount = 0L;
         future = executor.schedule(new Task(stepCount),
-                2 * GameTools.ROUND_TIME_SEC, TimeUnit.SECONDS);
+                GameTools.ROUND_TIME_SEC, TimeUnit.SECONDS);
     }
 
     public synchronized Boolean makeStep(Step step, Long stepID) {
@@ -169,7 +176,8 @@ public final class GameActive extends GameAbstract {
     private void end() {
 
         notifyPlayers(new StatusCodeGameover(getField()));
-        watchers.clear();
+        getObserver().afterGameOver(getGameID());
+        addToDataBase();
 
         gamers.values().forEach(gamer -> {
             if (gamer instanceof PlayerGamer) {
@@ -177,8 +185,21 @@ public final class GameActive extends GameAbstract {
             }
         });
         gamers.clear();
+        watchers.clear();
+    }
 
-        getObserver().afterGameOver(getGameID());
+    private void addToDataBase() {
+        if (!getField().isGameOver()) {
+            return;
+        }
+
+        for (PlayerAbstractActive player : gamers.values()) {
+            if (player.getUserID() != null && player.getOnline()) {
+                final Integer assumedCount = getField().getPlayerSpots(player.getPlayerID()).size();
+                final Double result = assumedCount.doubleValue() * gamers.size();
+                scoreDao.addScore(new Score(player.getUserID(), result));
+            }
+        }
     }
 
     @JsonIgnore
@@ -205,8 +226,8 @@ public final class GameActive extends GameAbstract {
 
     private static final ThreadLocal<Long> THREAD_LOCAL = new ThreadLocal<>();
 
-    private final class Task extends Thread {
-
+    private final class Task implements Runnable {
+      
         private final Long stepID;
 
         Task(Long taskStepID) {

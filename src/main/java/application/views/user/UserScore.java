@@ -1,6 +1,6 @@
 package application.views.user;
 
-import application.entities.UserEntity;
+import application.entities.user.UserEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class UserScore {

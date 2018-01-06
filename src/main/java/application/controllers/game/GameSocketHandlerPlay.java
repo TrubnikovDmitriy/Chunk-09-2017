@@ -1,5 +1,6 @@
 package application.controllers.game;
 
+import application.dao.game.ScoreDaoJpa;
 import application.exceptions.game.GameException;
 import application.models.game.field.Step;
 import application.models.game.game.GameActive;
@@ -28,16 +29,17 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
     private final ConcurrentHashMap<Long, GameActive> activeGames;
     private final CopyOnWriteArraySet<WebSocketSession> subscribers;
     private ScheduledExecutorService executor;
-
+    private final ScoreDaoJpa scoreDao;
     private final UserService userService;
 
     GameSocketHandlerPlay(UserService userService, ObjectMapper mapper,
-                          ScheduledExecutorService executor) {
+                          ScheduledExecutorService executor, ScoreDaoJpa scoreDao) {
         super(mapper);
         this.activeGames = new ConcurrentHashMap<>();
         this.subscribers = new CopyOnWriteArraySet<>();
         this.executor = executor;
         this.userService = userService;
+        this.scoreDao = scoreDao;
     }
 
     @Override
@@ -64,7 +66,7 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
             unsubscribe(session);
             return;
         }
-        if (code.equals(GameSocketStatusCode.LEAVE.getValue())) {
+        if (code.equals(GameSocketStatusCode.PLAYER_OFF.getValue())) {
             leave(session);
             return;
         }
@@ -84,7 +86,7 @@ public final class GameSocketHandlerPlay extends GameSocketHandler {
     }
 
     void addGame(GamePrepare readyGame) {
-        final GameActive newGame = new GameActive(readyGame, executor);
+        final GameActive newGame = new GameActive(readyGame, executor, scoreDao);
         newGame.setObserver(this::destroy);
         activeGames.put(readyGame.getGameID(), newGame);
 

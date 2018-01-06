@@ -1,6 +1,6 @@
 package application.models.user;
 
-import application.entities.UserEntity;
+import application.entities.user.UserEntity;
 
 
 public final class UserSignUp extends UserBase {
