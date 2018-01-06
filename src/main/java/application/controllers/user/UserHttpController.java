@@ -6,7 +6,7 @@ import application.models.game.field.Score;
 import application.models.user.UserSignIn;
 import application.models.user.UserSignUp;
 import application.models.user.UserUpdate;
-import application.services.user.UserService;
+//import application.services.user.UserService;
 import application.services.user.UserServiceJpa;
 import application.views.user.UserFail;
 import application.views.user.UserScoreboard;
@@ -28,11 +28,11 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class UserHttpController {
 
-    private final UserService userService;
+    private final UserServiceJpa userService;
     private final ScoreDaoJpa scoreService;
     private final Logger httpLogger = LoggerFactory.getLogger(UserHttpController.class);
 
-    public UserHttpController(UserService userService,
+    public UserHttpController(UserServiceJpa userService,
                               ScoreDaoJpa scoreService) {
         this.userService = userService;
         this.scoreService = scoreService;

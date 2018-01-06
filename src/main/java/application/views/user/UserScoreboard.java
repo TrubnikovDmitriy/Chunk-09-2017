@@ -3,9 +3,9 @@ package application.views.user;
 
 public final class UserScoreboard {
 
-    final String username;
-    final Long userID;
-    final Double score;
+    private final String username;
+    private final Long userID;
+    private final Double score;
 
     public UserScoreboard(String username, Long userID, Double score) {
         this.username = username;
