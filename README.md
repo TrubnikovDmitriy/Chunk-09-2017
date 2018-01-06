@@ -1,21 +1,12 @@
 
-# Chunk-09-2017 [![Build Status](https://travis-ci.org/java-park-mail-ru/Chunk-09-2017.svg?branch=develop)](https://travis-ci.org/java-park-mail-ru/Chunk-09-2017)
-## It Is Not Defense
->***Поглощай или будь поглощен<br>***
+# Команда Технопарка: Chunk-09-2017 [![Build Status](https://travis-ci.org/java-park-mail-ru/Chunk-09-2017.svg?branch=master)](https://travis-ci.org/java-park-mail-ru/Chunk-09-2017)
+## Название игры: <u>It Is Not Defense</u>
+>**Клиент-серверное приложение - многопользовательская онлайн игра<br>**
 
-## [Frontend](https://guardians-game.ru/)<=>[Backend](https://backend-java-spring.herokuapp.com/)
+## Репозитории: [Frontend](https://github.com/frontend-park-mail-ru/2017_2_Chunk)<=>[Backend](https://github.com/TrubnikovDmitriy/Chunk-09-2017)
+>**Поиграть в игру можно [здесь](https://back-frontend.herokuapp.com/)<br>**
 
-## Members
-* Андрей Савосин
-* Игорь Дружинин
-* Дима Трубников
-
-## API
-| Действие | Тип запроса, URL | Тело запроса | Тело ответа |
-| --- | --- | --- | --- |
-| Зарегистрироваться | POST, /sign_up | "username", "email", "password" | "username", "email" |
-| Авторизоваться | POST, /sign_in | "login", "password" | "username", "email" |
-| Изменить профиль текущего пользователя | POST, /update | “username”, ”email”, “password”, “old_password” | "username", "email" |
-| Запросить данные пользователя текущей сессии | GET, /whoisit | | "username", "email" | |
-| Разлогиниться | GET, /exit |  |  |
-
+## Члены команды:
+* Андрей Савосин (frontend)
+* Игорь Дружинин (frontend)
+* Дмитрий Трубников (backend)
